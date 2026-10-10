@@ -1,7 +1,9 @@
-import { Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
-const SidebarLink = ({ to, icon, label, active }) => (
-    <Link to={to} className={`sidebar-link ${active ? 'active' : ''}`}>
+const SidebarLink = ({ to, icon, label, active, onClick }) => (
+    <Link to={to} className={`sidebar-link ${active ? 'active' : ''}`} onClick={onClick}>
         <span className="icon">{icon}</span> {label}
     </Link>
 );
@@ -18,6 +20,15 @@ const COMPLETION = [
 ];
 
 export default function InstructorDashboard() {
+    const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        logout();
+        navigate('/');
+    };
+
     return (
         <div className="app-shell">
             <aside className="sidebar">
@@ -31,13 +42,13 @@ export default function InstructorDashboard() {
                     <SidebarLink to="#" icon="👥" label="Students" />
                     <SidebarLink to="#" icon="📊" label="Analytics" />
                     <div className="sidebar-section-label">Account</div>
-                    <SidebarLink to="/login" icon="🚪" label="Log Out" />
+                    <SidebarLink to="/login" icon="🚪" label="Log Out" onClick={handleLogout} />
                 </nav>
                 <div className="sidebar-footer">
                     <div className="sidebar-user">
-                        <div className="sidebar-avatar">I</div>
+                        <div className="sidebar-avatar">{user?.name ? user.name.charAt(0).toUpperCase() : 'I'}</div>
                         <div>
-                            <span className="sidebar-user-name">Instructor</span>
+                            <span className="sidebar-user-name">{user?.name || "Instructor"}</span>
                             <span className="sidebar-user-role">Pro Account</span>
                         </div>
                     </div>
@@ -107,17 +118,18 @@ export default function InstructorDashboard() {
                             <tbody>
                                 {[
                                     {
-                                        initial: 'A', name: 'Alice', course: 'Python for Beginners', rating: '★★★★★', comment: '"Best course I've taken!"', date:'2 days ago' },
-                  { initial: 'B', name: 'Bob', course: 'React Advanced', rating: '★★★★☆', comment: '"Very helpful content."', date: '5 days ago' },
-                ].map((r, i) => (
-                                            <tr key={i}>
-                                                <td><div className="user-cell"><div className="avatar">{r.initial}</div><div className="user-name">{r.name}</div></div></td>
-                                                <td style={{ fontSize: '13px' }}>{r.course}</td>
-                                                <td style={{ color: 'var(--warning)', fontWeight: 700 }}>{r.rating}</td>
-                                                <td style={{ fontSize: '13px', color: 'var(--gray)' }}>{r.comment}</td>
-                                                <td style={{ fontSize: '13px', color: 'var(--gray)' }}>{r.date}</td>
-                                            </tr>
-                                        ))}
+                                        initial: 'A', name: 'Alice', course: 'Python for Beginners', rating: '★★★★★', comment: '"Best course I\'ve taken!"', date: '2 days ago'
+                                    },
+                                    { initial: 'B', name: 'Bob', course: 'React Advanced', rating: '★★★★☆', comment: '"Very helpful content."', date: '5 days ago' },
+                                ].map((r, i) => (
+                                    <tr key={i}>
+                                        <td><div className="user-cell"><div className="avatar">{r.initial}</div><div className="user-name">{r.name}</div></div></td>
+                                        <td style={{ fontSize: '13px' }}>{r.course}</td>
+                                        <td style={{ color: 'var(--warning)', fontWeight: 700 }}>{r.rating}</td>
+                                        <td style={{ fontSize: '13px', color: 'var(--gray)' }}>{r.comment}</td>
+                                        <td style={{ fontSize: '13px', color: 'var(--gray)' }}>{r.date}</td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>

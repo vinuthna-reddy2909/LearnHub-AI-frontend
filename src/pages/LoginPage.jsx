@@ -1,13 +1,21 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 export default function LoginPage() {
     const [form, setForm] = useState({ email: '', password: '' });
+    const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        navigate('/student-dashboard');
+        try {
+            await login(form.email, form.password);
+            navigate('/student-dashboard');
+        } catch (err) {
+            console.error("Login failed", err);
+            alert("Login failed. Check your credentials.");
+        }
     };
 
     return (

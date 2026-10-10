@@ -1,19 +1,22 @@
 import { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import api from '../services/api';
 
 const QUESTIONS = [
-    { id: 1, text: 'What keyword is used to define a function in Python?', opts: ['function', 'def', 'define', 'func'], correct: 1 },
-    { id: 2, text: 'Which data type is mutable in Python?', opts: ['Tuple', 'String', 'List', 'Integer'], correct: 2 },
-    { id: 3, text: 'What does len() return for an empty list?', opts: ['null', 'undefined', '0', '1'], correct: 2 },
-    { id: 4, text: 'Which operator is used for integer division?', opts: ['/', '//', '%', '**'], correct: 1 },
-    { id: 5, text: 'How do you start a comment in Python?', opts: ['//', '#', '/*', '--'], correct: 1 },
+    { _id: 'q1', text: 'What keyword is used to define a function in Python?', opts: ['function', 'def', 'define', 'func'], correct: 1 },
+    { _id: 'q2', text: 'Which data type is mutable in Python?', opts: ['Tuple', 'String', 'List', 'Integer'], correct: 2 },
+    { _id: 'q3', text: 'What does len() return for an empty list?', opts: ['null', 'undefined', '0', '1'], correct: 2 },
+    { _id: 'q4', text: 'Which operator is used for integer division?', opts: ['/', '//', '%', '**'], correct: 1 },
+    { _id: 'q5', text: 'How do you start a comment in Python?', opts: ['//', '#', '/*', '--'], correct: 1 },
 ];
 
 export default function QuizViewerPage() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [current, setCurrent] = useState(0);
     const [answers, setAnswers] = useState({});
     const [timeLeft, setTimeLeft] = useState(600);
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         if (timeLeft <= 0) return;
@@ -27,6 +30,29 @@ export default function QuizViewerPage() {
     const q = QUESTIONS[current];
 
     const select = (idx) => setAnswers(a => ({ ...a, [current]: idx }));
+
+    const handleSubmit = async () => {
+        setSubmitting(true);
+        // Format answers for API: [{ questionId, selectedOptionIndex }]
+        const formattedAnswers = Object.entries(answers).map(([qIdx, optIdx]) => ({
+            questionId: QUESTIONS[qIdx]._id,
+            selectedOptionIndex: optIdx
+        }));
+
+        try {
+            const { data } = await api.post(`/api/quizzes/${id}/submit`, { answers: formattedAnswers });
+            navigate(`/quiz-result/${data.attemptId}`, { state: { score: data.score, passed: data.passed } });
+        } catch (error) {
+            console.warn("Backend submit failed, falling back to mock result handling.");
+            // Calculate mock score
+            let correct = 0;
+            Object.entries(answers).forEach(([qIdx, optIdx]) => {
+                if (QUESTIONS[qIdx].correct === optIdx) correct++;
+            });
+            const score = (correct / QUESTIONS.length) * 100;
+            navigate(`/quiz-result/mock_attempt_${id}`, { state: { score, passed: score >= 70 } });
+        }
+    };
 
     return (
         <div className="quiz-shell">
@@ -70,7 +96,9 @@ export default function QuizViewerPage() {
                     </button>
                     {current < QUESTIONS.length - 1
                         ? <button className="btn btn-primary btn-sm" onClick={() => setCurrent(c => c + 1)}>Next →</button>
-                        : <Link to={`/quiz-result/1`} className="btn btn-primary btn-sm">Submit Quiz ✓</Link>
+                        : <button className="btn btn-primary btn-sm" onClick={handleSubmit} disabled={submitting}>
+                            {submitting ? 'Submitting...' : 'Submit Quiz ✓'}
+                        </button>
                     }
                 </div>
             </main>

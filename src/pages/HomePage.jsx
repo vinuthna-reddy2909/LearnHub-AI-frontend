@@ -1,6 +1,10 @@
+import { useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 export default function HomePage() {
+    const { user } = useContext(AuthContext);
+
     return (
         <>
             {/* NAVBAR */}
@@ -13,8 +17,16 @@ export default function HomePage() {
                         <li><a href="#">About</a></li>
                     </ul>
                     <div className="nav-actions">
-                        <Link to="/login" className="btn btn-outline btn-sm">Log In</Link>
-                        <Link to="/register" className="btn btn-primary btn-sm">Get Started</Link>
+                        {user ? (
+                            <Link to={user.role === 'Instructor' ? '/instructor-dashboard' : '/student-dashboard'} className="btn btn-primary btn-sm">
+                                Dashboard &rarr;
+                            </Link>
+                        ) : (
+                            <>
+                                <Link to="/login" className="btn btn-outline btn-sm">Log In</Link>
+                                <Link to="/register" className="btn btn-primary btn-sm">Get Started</Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </nav>

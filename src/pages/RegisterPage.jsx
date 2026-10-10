@@ -1,13 +1,22 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 export default function RegisterPage() {
     const [form, setForm] = useState({ name: '', email: '', password: '', role: 'Student' });
+    const { register } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        navigate(form.role === 'Instructor' ? '/instructor-dashboard' : '/student-dashboard');
+        try {
+            await register(form.name, form.email, form.password);
+            // Ignore role for now since API doesn't support setting it currently unless implemented later
+            navigate('/student-dashboard');
+        } catch (error) {
+            console.error("Registration failed", error);
+            alert("Failed to register. Please try again.");
+        }
     };
 
     return (

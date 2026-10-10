@@ -14,9 +14,28 @@ const FILTERS = ['All', 'Python', 'Web', 'AI', 'Design', 'Data'];
 export default function CoursesPage() {
     const [activeFilter, setActiveFilter] = useState('All');
     const [search, setSearch] = useState('');
+    const [courses, setCourses] = useState(COURSES);
+    const [loading, setLoading] = useState(true);
 
-    const visible = COURSES.filter(c => {
-        const matchCat = activeFilter === 'All' || c.cat === activeFilter;
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                // Ignore API if we inherently know we are mocking to save time
+                const { default: api } = await import('../services/api');
+                const { data } = await api.get('/api/courses');
+                if (data && data.length > 0) {
+                    setCourses(data);
+                }
+            } catch (error) {
+                console.warn("Failed to fetch courses from API, using mock data.");
+            }
+            setLoading(false);
+        };
+        fetchCourses();
+    }, []);
+
+    const visible = courses.filter(c => {
+        const matchCat = activeFilter === 'All' || c.cat === activeFilter || c.category === activeFilter;
         const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
         return matchCat && matchSearch;
     });

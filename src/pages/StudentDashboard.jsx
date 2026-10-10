@@ -1,12 +1,22 @@
-import { Link } from 'react-router-dom';
+import { useContext } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
-const SidebarLink = ({ to, icon, label, active }) => (
-    <Link to={to} className={`sidebar-link ${active ? 'active' : ''}`}>
+const SidebarLink = ({ to, icon, label, active, onClick }) => (
+    <Link to={to} className={`sidebar-link ${active ? 'active' : ''}`} onClick={onClick}>
         <span className="icon">{icon}</span> {label}
     </Link>
 );
 
 export default function StudentDashboard() {
+    const { user, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        logout();
+        navigate('/');
+    };
     return (
         <div className="app-shell">
             {/* SIDEBAR */}
@@ -22,13 +32,13 @@ export default function StudentDashboard() {
                     <SidebarLink to="/quiz-result/1" icon="🧠" label="AI Recommendations" />
                     <SidebarLink to="#" icon="🏆" label="Certificates" />
                     <div className="sidebar-section-label">Account</div>
-                    <SidebarLink to="/login" icon="🚪" label="Log Out" />
+                    <SidebarLink to="/login" icon="🚪" label="Log Out" onClick={handleLogout} />
                 </nav>
                 <div className="sidebar-footer">
                     <div className="sidebar-user">
-                        <div className="sidebar-avatar">V</div>
+                        <div className="sidebar-avatar">{user?.name ? user.name.charAt(0).toUpperCase() : 'U'}</div>
                         <div>
-                            <span className="sidebar-user-name">Vinuthna</span>
+                            <span className="sidebar-user-name">{user?.name || "Student"}</span>
                             <span className="sidebar-user-role">Student</span>
                         </div>
                     </div>
@@ -39,7 +49,7 @@ export default function StudentDashboard() {
             <main className="main-content">
                 <div className="page-topbar">
                     <div>
-                        <h2>Good morning, Vinuthna 👋</h2>
+                        <h2>Good morning, {user?.name ? user.name.split(' ')[0] : 'Student'} 👋</h2>
                         <p>You have 2 quizzes due this week.</p>
                     </div>
                     <div className="topbar-right">
